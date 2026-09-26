@@ -2,7 +2,7 @@
 
 A collection of lightweight Python services that give a conversational AI system contextual awareness, persistent memory retrieval, multi-channel messaging, and prompt cache efficiency.
 
-These components were built to support a long-running, stateful AI companion deployed on a personal VPS, with a Supabase-backed memory store and multiple interaction channels (Telegram and a custom web frontend).
+These components were built to support a long-running, stateful AI companion deployed on a personal VPS, with a Supabase-backed memory store and multiple interaction channels (a messaging bot and a custom web frontend).
 
 ---
 
@@ -81,7 +81,7 @@ python web_channel_bridge.py
 
 **File:** `peek_receiver.py`
 
-An HTTP endpoint that receives screenshots POSTed from a mobile device (e.g. triggered by MacroDroid on Android), stores them locally, forwards them to a Telegram bot, and injects a signal into a `tmux` session so the AI session can read and respond to the screenshot.
+An HTTP endpoint that receives screenshots POSTed from a mobile device (e.g. triggered by MacroDroid on Android), stores them locally, optionally forwards them to a messaging bot, and injects a signal into a `tmux` session so the AI session can read and respond to the screenshot.
 
 This enables the AI to proactively understand what the user is currently doing on their phone and provide contextually-aware responses — without any manual sharing step from the user.
 
@@ -90,11 +90,11 @@ Security: all uploads require a shared secret sent as the `X-Secret` header. A 3
 **Setup:**
 ```bash
 export PEEK_SECRET=your_shared_secret
-export TELEGRAM_BOT_TOKEN=your_bot_token
-export TELEGRAM_CHAT_ID=your_chat_id
-export PEEK_TMUX_SESSION=your_session_name   # default: main
-export PEEK_PORT=8766                        # default
-export PEEK_SAVE_DIR=/tmp/peek               # default
+export NOTIFY_BOT_TOKEN=your_bot_token      # optional: forward screenshots to a messaging bot
+export NOTIFY_CHAT_ID=your_chat_id          # optional: required if NOTIFY_BOT_TOKEN is set
+export PEEK_TMUX_SESSION=your_session_name  # default: main
+export PEEK_PORT=8766                       # default
+export PEEK_SAVE_DIR=/tmp/peek              # default
 
 python peek_receiver.py
 ```
@@ -108,6 +108,10 @@ python peek_receiver.py
 ### 4. Prompt Cache Keepalive
 
 **File:** `cache_keepalive.py`
+
+> **Note:** This module is relevant only when accessing Claude via the **Anthropic API directly**
+> (i.e. you manage your own API key and make raw HTTP calls). It does not apply to the web
+> interface at claude.ai, which handles caching internally.
 
 Anthropic's prompt cache TTL is 5 minutes. For long system prompts or extended conversation histories, this script fires a minimal heartbeat API request every ~5 minutes when the user is idle — keeping the cache warm so the next real user message does not pay a cold-cache penalty.
 
