@@ -16,8 +16,8 @@ Setup:
 
 Environment variables:
   PEEK_SECRET        Shared secret for authenticating uploads (required)
-  TELEGRAM_BOT_TOKEN Telegram bot token for forwarding screenshots
-  TELEGRAM_CHAT_ID   Target chat ID
+  NOTIFY_BOT_TOKEN   Bot token for forwarding screenshots to a messaging channel (optional)
+  NOTIFY_CHAT_ID     Target chat ID for the messaging channel (optional)
   PEEK_SAVE_DIR      Directory to save screenshots (default: /tmp/peek)
   PEEK_TMUX_SESSION  tmux session name to inject signals into (default: main)
   PEEK_PORT          Port to listen on (default: 8766)
@@ -32,8 +32,8 @@ from datetime import datetime
 
 SECRET        = os.environ.get('PEEK_SECRET', '')
 SAVE_DIR      = os.environ.get('PEEK_SAVE_DIR', '/tmp/peek')
-CHAT_ID       = os.environ.get('TELEGRAM_CHAT_ID', '')
-BOT_TOKEN     = os.environ.get('TELEGRAM_BOT_TOKEN', '')
+CHAT_ID       = os.environ.get('NOTIFY_CHAT_ID', '')
+BOT_TOKEN     = os.environ.get('NOTIFY_BOT_TOKEN', '')
 TMUX_SESSION  = os.environ.get('PEEK_TMUX_SESSION', 'main')
 PORT          = int(os.environ.get('PEEK_PORT', 8766))
 MAX_SAVED     = 10
@@ -42,7 +42,7 @@ COOLDOWN_SECS = 30
 _last_forward_time = 0
 
 
-def send_photo_to_telegram(token, chat_id, photo_path):
+def send_photo_via_bot(token, chat_id, photo_path):
     url = f"https://api.telegram.org/bot{token}/sendPhoto"
     boundary = "----PeekBoundary"
     with open(photo_path, "rb") as f:
@@ -135,9 +135,9 @@ class Handler(http.server.BaseHTTPRequestHandler):
             tg_ok = False
             if BOT_TOKEN and CHAT_ID:
                 try:
-                    tg_ok = send_photo_to_telegram(BOT_TOKEN, CHAT_ID, filepath)
+                    tg_ok = send_photo_via_bot(BOT_TOKEN, CHAT_ID, filepath)
                 except Exception as e:
-                    print(f"[peek] Telegram send error: {e}", flush=True)
+                    print(f"[peek] bot notification error: {e}", flush=True)
 
             inject_tmux_signal(TMUX_SESSION, filepath)
 
