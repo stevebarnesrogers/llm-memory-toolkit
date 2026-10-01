@@ -75,7 +75,7 @@ def get_last_message_time():
 
 def get_system_prompt():
     try:
-        data = supa_get('/rest/v1/profiles?profile_type=eq.chris_profile&select=content&limit=1')
+        data = supa_get('/rest/v1/profiles?profile_type=eq.system_profile&select=content&limit=1')
         if data and data[0].get('content'):
             return data[0]['content']
     except Exception as e:
