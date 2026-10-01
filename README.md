@@ -2,7 +2,7 @@
 
 A collection of lightweight Python services that give a conversational AI system contextual awareness, persistent memory retrieval, multi-channel messaging, and prompt cache efficiency.
 
-These components were built to support a long-running, stateful AI companion deployed on a personal VPS, with a Supabase-backed memory store and multiple interaction channels (a messaging bot and a custom web frontend).
+These components were built to support a long-running, stateful AI assistant with a Supabase-backed memory store and multiple interaction channels (a messaging bot and a custom web frontend).
 
 ---
 
@@ -52,7 +52,7 @@ CREATE TABLE memories (
 
 **File:** `web_channel_bridge.py`
 
-A minimal HTTP bridge (port 7788) that connects a web frontend sending messages via POST to a Claude Code plugin that polls for new messages and delivers AI replies via SSE (Server-Sent Events).
+A minimal HTTP bridge that connects a web frontend sending messages via POST to a Claude Code plugin that polls for new messages and delivers AI replies via SSE (Server-Sent Events).
 
 Architecture:
 ```
@@ -60,7 +60,7 @@ Browser (fetch + EventSource)
     │  POST /api/chat { request_id, text }
     │  ← SSE stream of { type, text } events
     ▼
-web_channel_bridge.py  (port 7788)
+web_channel_bridge.py
     │  GET  /internal/next          ← Web Channel Plugin polls here
     │  POST /internal/reply         ← Plugin delivers Claude's response
     ▼
@@ -72,7 +72,6 @@ No secrets, no external dependencies beyond the standard library.
 **Setup:**
 ```bash
 python web_channel_bridge.py
-# Listens on http://127.0.0.1:7788
 ```
 
 ---
@@ -136,7 +135,7 @@ python cache_keepalive.py
 
 **Expected Supabase tables:**
 - `chat_messages` — columns: `role`, `content`, `created_at`
-- `profiles` — columns: `profile_type`, `content` (one row with `profile_type = 'chris_profile'` holds the system prompt)
+- `profiles` — columns: `profile_type`, `content` (one row with `profile_type = 'system_profile'` holds the system prompt)
 
 ---
 
